@@ -1,8 +1,15 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import kagglehub
+import numpy as np
 
-DataFrame = pd.read_csv("TARP.csv")
+# Download latest version
+path = kagglehub.dataset_download("sauravmishraa/waterneeded")
+
+print("Path to dataset files:", path)
+
+DataFrame = pd.read_csv(path + "\TARP.csv")
 print("Data type : info method")
 print(DataFrame.info())
 print("Data arithmetic statistics : describe method")
@@ -60,7 +67,7 @@ for key, Group in Grouped_Purified_DataFrame:
     mask = Group.Status_index == 1
     temp = Group.loc[mask, :]
     ls.append(sns.jointplot(kind="kde", data=temp, x="Temperature", y="Soil Moisture"))
-    ls[key[0]].fig.suptitle(f"Status_index : {key[0]}")
+    ls[key[0]].fig.suptitle(f"Time_Boundery : {key[0]}")
     plt.show()
 
 ls.clear()
@@ -82,4 +89,16 @@ for key, Group in Grouped_Purified_DataFrame:
     model_list.append(KNeighborsClassifier(n_neighbors=5))
     model_list[key[0]].fit(X_train, Y_train)
     Y_hat = model_list[key[0]].predict(X_test)
-    print(metrics.confusion_matrix(Y_test, Y_hat))
+    knn_metrics = metrics.confusion_matrix(Y_test, Y_hat)
+    if key[0] == 9:
+        knn_metrics = np.array([[int(knn_metrics[0]), 0], [0, 0]])
+    print(key[0])
+    print(knn_metrics)
+    Percision = int(knn_metrics[0][0]) / (
+        int(knn_metrics[0][0]) + int(knn_metrics[0][1])
+    )
+    print(f"Percision : {Percision}")
+    Recall = int(knn_metrics[0][0]) / (int(knn_metrics[0][0]) + int(knn_metrics[1][0]))
+    print(f"Recall : {Recall}")
+    F1score = (Percision * Recall * 2) / (Percision + Recall)
+    print(f"F1score : {F1score}")
